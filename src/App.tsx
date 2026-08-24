@@ -92,6 +92,14 @@ export default function App() {
       })
   }, [tasks, selectedWorkspace, search, statusFilter, priorityFilter, sortOrder])
 
+  const workspaceTaskCounts = useMemo(() => {
+    const counts: Record<string, number> = {}
+    workspaces.forEach(ws => {
+      counts[ws.id] = tasks.filter(t => t.workspaceId === ws.id).length
+    })
+    return counts
+  }, [tasks, workspaces])
+
   const selectedName = workspaces.find(workspace => workspace.id === selectedWorkspace)?.name || ''
 
   return (
@@ -106,10 +114,12 @@ export default function App() {
           <span className="sidebar-label">Workspaces</span>
           {workspaces.map(workspace => (
             <button key={workspace.id} className={`workspace-button ${selectedWorkspace === workspace.id ? 'active' : ''}`} onClick={() => { setSelectedWorkspace(workspace.id); setMobileMenuOpen(false) }}>
-              <span className="workspace-dot" />{workspace.name}
+              <span className="workspace-dot" />{workspace.name}<span className="workspace-count">{workspaceTaskCounts[workspace.id]}</span>
             </button>
           ))}
         </div>
+        <div className="sidebar-divider" />
+        <ActivityPanel activities={activities} />
       </aside>
 
       <main className="main-content">
@@ -140,7 +150,6 @@ export default function App() {
         </section>
       </main>
 
-      <ActivityPanel activities={activities} />
       {modalOpen && <TaskForm task={editingTask} onSave={saveTask} onClose={() => setModalOpen(false)} />}
     </div>
   )
